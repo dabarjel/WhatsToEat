@@ -1,4 +1,4 @@
-# WhatsToEat 🍔
+# WhatsToEat
 ### Team Members:
 - Daniel Abarjel
 - Ehsan Semati
