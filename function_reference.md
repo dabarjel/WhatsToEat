@@ -15,7 +15,6 @@ This document is a reference for all functions we wrote in the WhatsToEat Meal F
 - **suggest_by_flavor(meals, flavor, budget=None)** – Returns meals matching a flavor preference.
 - **filter_by_price(meals, max_price)** – Returns meals at or below a price limit.
 - **add_rating(meal_id, rating)** – Stores or updates a user rating for a meal.
-- **get_average_rating(meal)** - Finds the average of the meal.  
 - **sort_meals_by_rating(meals)** – Sorts meals by their average user ratings.   
 
 ## COMPLEX FUNCTIONS
