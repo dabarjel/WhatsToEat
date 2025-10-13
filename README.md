@@ -16,7 +16,7 @@ The domain focus of this project is in Library Management. It can be difficult f
 
 # WhatsToEat – Function Reference and Key Functions
 
-This document is a reference for all functions in the WhatsToEat Meal Finder Library and includes descriptions and examples.
+The rest of this document is a reference for all functions in the WhatsToEat Meal Finder Library and includes descriptions and examples. More refrences can be found on the in the file_refrence.md file.
 
 ## SIMPLE FUNCTIONS
 
