@@ -1,15 +1,21 @@
 from __future__ import annotations
-from typing import Iterable, List, Tuple, Dict, Optional
-import csv
-import statistics
-
-
+from typing import Iterable, List, Tuple, Dict, Optional, Any
+from meal_finder_library import (
+    normalize_text,
+    parse_menu_csv,
+    filter_by_diet,
+    filter_by_price,
+    average_price,
+    count_vegetarian,
+    recommend_meals,
+    generate_analytics
+)
 
 class Menu:
-    """Collection of Meal objects with search and stats.
+    """Collection of Meal objects with search, filtering, and analytics.
 
-    Integrates Project 1 functions by tokenizing and ranking items for
-    simple information-retrieval-style search.
+    Integrates WhatsToEat function library for parsing, filtering,
+    scoring, and analytics.
 
     Example:
         >>> csv_text = "id,name,price,calories,diet,flavor\\n1,Pasta,12.5,550,vegetarian,creamy"
@@ -18,36 +24,27 @@ class Menu:
         []
         >>> round(menu.average_price(), 2)
         12.5
-        >>> len(menu.search("creamy vegetarian", top_k=1))  # doctest: +ELLIPSIS
-        1
+        >>> menu.filter_by_diet("vegetarian")[0].name
+        'Pasta'
     """
 
     def __init__(self, meals: Optional[Iterable["Meal"]] = None):
-        """Initialize Menu.
-
-        Args:
-            meals (Iterable[Meal] | None): Optional iterable of Meal instances.
-
-        Raises:
-            TypeError: If any element is not a Meal.
-        """
         self._meals: List["Meal"] = []
         if meals is not None:
             for m in meals:
                 if not hasattr(m, "__class__") or m.__class__.__name__ != "Meal":
-                    # Avoid circular import in type check; prefer duck-typing or isinstance if Meal is importable.
                     raise TypeError("All items must be Meal instances.")
                 self._meals.append(m)
 
-    # Encapsulation
+    # Properties
     @property
     def meals(self) -> List["Meal"]:
-        """list[Meal]: Copy of meals (read-only to callers)."""
+        #Return a copy of meals (read-only).
         return list(self._meals)
 
-    # Basic mutators with validation
+    # Add / Remove
     def add(self, meal: "Meal") -> None:
-        #Add a Meal (no duplicates by id).
+        #Add a single Meal instance; raises if duplicate id.
         if meal is None or meal.__class__.__name__ != "Meal":
             raise TypeError("meal must be a Meal instance.")
         if any(m.id == meal.id for m in self._meals):
@@ -55,7 +52,7 @@ class Menu:
         self._meals.append(meal)
 
     def add_many(self, meals: Iterable["Meal"]) -> None:
-        #Add many meals; raises if any id duplicates.
+        #Add multiple meals; raises if any duplicates.
         ids = {m.id for m in self._meals}
         for m in meals:
             if m.__class__.__name__ != "Meal":
@@ -66,14 +63,14 @@ class Menu:
             self._meals.append(m)
 
     def remove(self, meal_id: str) -> Optional["Meal"]:
-        #Remove by id; returns removed Meal or None.
+        #Remove meal by id; return the removed meal or None.
         for i, m in enumerate(self._meals):
             if m.id == meal_id:
                 return self._meals.pop(i)
         return None
 
     def get(self, meal_id: str) -> Optional["Meal"]:
-        #Get by id or None.
+        #Get meal by id; return None if not found.
         for m in self._meals:
             if m.id == meal_id:
                 return m
@@ -82,112 +79,53 @@ class Menu:
     # Alternate constructor (CSV)
     @classmethod
     def from_csv(cls, csv_text: str) -> Tuple["Menu", List[str]]:
-        """Parse CSV text into a Menu and a list of row-level error messages.
+        #Parse CSV into Menu; returns list of parsing errors.
+        try:
+            meal_dicts = parse_menu_csv(csv_text)  # Library function
+            meals = [Meal(**m) for m in meal_dicts]  # Convert dicts to Meal objects
+            return cls(meals), []
+        except Exception as exc:
+            return cls([]), [str(exc)]
 
-        Required headers: id, name, price, calories, diet, flavor
-
-        Args:
-            csv_text (str): CSV string with header row.
-
-        Returns:
-            (Menu, list[str]): The built menu and any parsing errors.
-
-        Raises:
-            TypeError: If csv_text is not a string.
-            ValueError: If required headers are missing.
-        """
-        if not isinstance(csv_text, str):
-            raise TypeError("Menu.from_csv: csv_text must be a string")
-        lines = [ln for ln in csv_text.strip().splitlines() if ln.strip()]
-        reader = csv.DictReader(lines)
-        required = {"id", "name", "price", "calories", "diet", "flavor"}
-        if reader.fieldnames is None or not required.issubset({h.strip() for h in reader.fieldnames}):
-            raise ValueError(f"CSV missing required headers: {sorted(required)}")
-
-        meals: List["Meal"] = []
-        errors: List[str] = []
-        rownum = 1  # header is row 1 for user-friendly messages
-        for row in reader:
-            rownum += 1
-            try:
-                m = Meal(
-                    meal_id=str(row["id"]).strip(),
-                    name=str(row["name"]).strip(),
-                    price=float(row["price"]),
-                    calories=int(float(row["calories"])),
-                    diet=str(row["diet"]).strip(),
-                    flavor=str(row["flavor"]).strip(),
-                )
-                meals.append(m)
-            except Exception as exc:
-                errors.append(f"Row {rownum}: {exc!s}")
-        return cls(meals), errors
-
-    # Core filters & stats
+    # Filtering / Stats using library functions
     def filter_by_diet(self, restriction: str) -> List["Meal"]:
-        #Return meals matching a dietary restriction (case-insensitive).
-        if not isinstance(restriction, str):
-            raise TypeError("restriction must be a string.")
-        key = restriction.lower().strip()
-        return [m for m in self._meals if key in m.diet.lower()]
+        #Return meals matching diet restriction.
+        meal_dicts = [m.to_dict() for m in self._meals]
+        filtered_dicts = filter_by_diet(meal_dicts, restriction)
+        return [self.get(m["id"]) for m in filtered_dicts]
 
     def filter_by_price(self, max_price: float) -> List["Meal"]:
-        #Return meals at or below max_price.
-        if not isinstance(max_price, (int, float)) or max_price < 0:
-            raise ValueError("max_price must be non-negative.")
-        cap = float(max_price)
-        return [m for m in self._meals if m.price <= cap]
+        #Return meals with price <= max_price.
+        meal_dicts = [m.to_dict() for m in self._meals]
+        filtered_dicts = filter_by_price(meal_dicts, max_price)
+        return [self.get(m["id"]) for m in filtered_dicts]
 
     def average_price(self) -> float:
-        #Average price of all meals in menu (0.0 if empty).
-        prices = [m.price for m in self._meals]
-        return float(statistics.mean(prices)) if prices else 0.0
+        #Return average price of all meals (0 if empty).
+        return average_price([m.to_dict() for m in self._meals])
 
     def count_vegetarian(self) -> int:
-        #Count meals that include 'vegetarian' in diet.
-        return sum(1 for m in self._meals if "vegetarian" in m.diet.lower())
+        #Count meals labeled vegetarian.
+        return count_vegetarian([m.to_dict() for m in self._meals])
 
-    # Project 1 integration
-    def as_tokens_map(self) -> Dict[str, List[str]]:
-        """Return {meal_id: tokens} using Meal.tokens() (P1 tokenize)."""
-        return {m.id: m.tokens() for m in self._meals}
+    # Recommendation / Analytics
+    def recommend(
+        self,
+        prefs: Optional[Dict[str, float]] = None,
+        budget: Optional[float] = None,
+        top_k: int = 5,
+        strategy: str = "best"
+    ) -> List["Meal"]:
+        #Return top_k recommended meals using library recommend_meals.
+        meal_dicts = [m.to_dict() for m in self._meals]
+        recommended_dicts = recommend_meals(
+            meal_dicts, prefs=prefs, budget=budget, top_k=top_k, strategy=strategy
+        )
+        return [self.get(m["id"]) for m in recommended_dicts]
 
-    def search(self, text: str, top_k: int = 5) -> List["Meal"]:
-        """Search meals by text using P1 tokenize + rank_results.
-
-        Args:
-            text (str): Query text.
-            top_k (int): Number of results to return (>=1).
-
-        Returns:
-            list[Meal]: Top-k meals ranked by overlap.
-
-        Raises:
-            TypeError: If text is not a string.
-            ValueError: If top_k < 1.
-        """
-        if not isinstance(text, str):
-            raise TypeError("text must be a string.")
-        if not isinstance(top_k, int) or top_k < 1:
-            raise ValueError("top_k must be an int >= 1.")
-
-
-        q_tokens = [normalize_text(t) for t in text.split() if t.strip()]
-
-        # Build a map of meal_id -> tokens using flavor + diet
-        docs = {m.id: [normalize_text(t) for t in (m.flavor + " " + m.diet).split()] for m in self._meals}
-
-        # Count overlap of query tokens with meal tokens
-        scores = {meal_id: len(set(q_tokens) & set(tokens)) for meal_id, tokens in docs.items()}
-        
-        q_tokens = [t.lower() for t in text.split() if t.strip()]
-        docs = self.as_tokens_map()
-        scores = {k: len(set(q_tokens) & set(v)) for k, v in docs.items()}  # simple fallback
-
-        ranked_ids = sorted(scores, key=scores.get, reverse=True)[:top_k]
-        id_to_meal = {m.id: m for m in self._meals}
-        return [id_to_meal[mid] for mid in ranked_ids if mid in id_to_meal]
-
+    def analytics(self) -> Dict[str, Any]:
+        #Return analytics dictionary using library generate_analytics.
+        return generate_analytics([m.to_dict() for m in self._meals])
     # Magic methods
     def __len__(self) -> int:
         return len(self._meals)
@@ -195,8 +133,8 @@ class Menu:
     def __iter__(self):
         return iter(self._meals)
 
-    def __str__(self) -> str:
+    def __str__(self):
         return f"Menu with {len(self._meals)} meals"
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f"Menu(n_meals={len(self._meals)})"
