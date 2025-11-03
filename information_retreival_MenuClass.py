@@ -3,8 +3,7 @@ from typing import Iterable, List, Tuple, Dict, Optional
 import csv
 import statistics
 
-# If you built a Project 1 adapter:
-# from .p1_compat import p1
+
 
 class Menu:
     """Collection of Meal objects with search and stats.
