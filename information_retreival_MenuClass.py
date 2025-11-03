@@ -39,7 +39,7 @@ class Menu:
                     raise TypeError("All items must be Meal instances.")
                 self._meals.append(m)
 
-    # ---------- Encapsulation ----------
+    # Encapsulation
     @property
     def meals(self) -> List["Meal"]:
         """list[Meal]: Copy of meals (read-only to callers)."""
@@ -47,7 +47,7 @@ class Menu:
 
     # Basic mutators with validation
     def add(self, meal: "Meal") -> None:
-        """Add a Meal (no duplicates by id)."""
+        #Add a Meal (no duplicates by id).
         if meal is None or meal.__class__.__name__ != "Meal":
             raise TypeError("meal must be a Meal instance.")
         if any(m.id == meal.id for m in self._meals):
@@ -55,7 +55,7 @@ class Menu:
         self._meals.append(meal)
 
     def add_many(self, meals: Iterable["Meal"]) -> None:
-        """Add many meals; raises if any id duplicates."""
+        #Add many meals; raises if any id duplicates.
         ids = {m.id for m in self._meals}
         for m in meals:
             if m.__class__.__name__ != "Meal":
@@ -66,20 +66,20 @@ class Menu:
             self._meals.append(m)
 
     def remove(self, meal_id: str) -> Optional["Meal"]:
-        """Remove by id; returns removed Meal or None."""
+        #Remove by id; returns removed Meal or None.
         for i, m in enumerate(self._meals):
             if m.id == meal_id:
                 return self._meals.pop(i)
         return None
 
     def get(self, meal_id: str) -> Optional["Meal"]:
-        """Get by id or None."""
+        #Get by id or None.
         for m in self._meals:
             if m.id == meal_id:
                 return m
         return None
 
-    # ---------- Alternate constructor (CSV) ----------
+    # Alternate constructor (CSV)
     @classmethod
     def from_csv(cls, csv_text: str) -> Tuple["Menu", List[str]]:
         """Parse CSV text into a Menu and a list of row-level error messages.
@@ -123,31 +123,31 @@ class Menu:
                 errors.append(f"Row {rownum}: {exc!s}")
         return cls(meals), errors
 
-    # ---------- Core filters & stats ----------
+    # Core filters & stats
     def filter_by_diet(self, restriction: str) -> List["Meal"]:
-        """Return meals matching a dietary restriction (case-insensitive)."""
+        #Return meals matching a dietary restriction (case-insensitive).
         if not isinstance(restriction, str):
             raise TypeError("restriction must be a string.")
         key = restriction.lower().strip()
         return [m for m in self._meals if key in m.diet.lower()]
 
     def filter_by_price(self, max_price: float) -> List["Meal"]:
-        """Return meals at or below max_price."""
+        #Return meals at or below max_price.
         if not isinstance(max_price, (int, float)) or max_price < 0:
             raise ValueError("max_price must be non-negative.")
         cap = float(max_price)
         return [m for m in self._meals if m.price <= cap]
 
     def average_price(self) -> float:
-        """Average price of all meals in menu (0.0 if empty)."""
+        #Average price of all meals in menu (0.0 if empty).
         prices = [m.price for m in self._meals]
         return float(statistics.mean(prices)) if prices else 0.0
 
     def count_vegetarian(self) -> int:
-        """Count meals that include 'vegetarian' in diet."""
+        #Count meals that include 'vegetarian' in diet.
         return sum(1 for m in self._meals if "vegetarian" in m.diet.lower())
 
-    # ---------- Project 1 integration ----------
+    # Project 1 integration
     def as_tokens_map(self) -> Dict[str, List[str]]:
         """Return {meal_id: tokens} using Meal.tokens() (P1 tokenize)."""
         return {m.id: m.tokens() for m in self._meals}
@@ -171,9 +171,15 @@ class Menu:
         if not isinstance(top_k, int) or top_k < 1:
             raise ValueError("top_k must be an int >= 1.")
 
-        # q_tokens = p1.tokenize(text)
-        # scores = p1.rank_results(q_tokens, self.as_tokens_map())
-        # --- Replace the two lines above with your Project 1 functions. ---
+
+        q_tokens = [normalize_text(t) for t in text.split() if t.strip()]
+
+        # Build a map of meal_id -> tokens using flavor + diet
+        docs = {m.id: [normalize_text(t) for t in (m.flavor + " " + m.diet).split()] for m in self._meals}
+
+        # Count overlap of query tokens with meal tokens
+        scores = {meal_id: len(set(q_tokens) & set(tokens)) for meal_id, tokens in docs.items()}
+        
         q_tokens = [t.lower() for t in text.split() if t.strip()]
         docs = self.as_tokens_map()
         scores = {k: len(set(q_tokens) & set(v)) for k, v in docs.items()}  # simple fallback
@@ -182,7 +188,7 @@ class Menu:
         id_to_meal = {m.id: m for m in self._meals}
         return [id_to_meal[mid] for mid in ranked_ids if mid in id_to_meal]
 
-    # ---------- Magic methods ----------
+    # Magic methods
     def __len__(self) -> int:
         return len(self._meals)
 
