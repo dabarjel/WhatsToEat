@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Dict, List, Optional, Iterable
+from meal_finder_library import learn_preferences_from_history, within_budget
 
 class UserPreferences:
     """Represents a user's meal preferences (history + budget + learned weights).
@@ -72,7 +73,7 @@ class UserPreferences:
         #dict[str, float]: Copy of learned flavor/diet token weights (0..1).
         return dict(self._token_weights)
 
-    # ---------- Methods ----------
+    # Methods
     def add_meal_to_history(self, meal_id: str) -> None:
         """Add a meal ID to the user's history.
 
