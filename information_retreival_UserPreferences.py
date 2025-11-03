@@ -125,7 +125,7 @@ class UserPreferences:
         self._history_ids.clear()
 
     def reset_token_weights(self) -> None:
-        """Clear the user's learned token weights."""
+        #Clear the user's learned token weights.
         self._token_weights.clear()
 
     # String Representations
