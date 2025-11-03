@@ -2,7 +2,7 @@ from typing import Any, Dict, Iterable, List, Optional
 import random
 
 # Import Project 1 functions
-from project1_library import (
+from meal_finder_library import (
     learn_preferences_from_history,
     within_budget,
     get_average_rating,
