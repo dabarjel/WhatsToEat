@@ -4,6 +4,7 @@ init(meal_id, name, price, calories, diet, flavor) – Creates a new Meal object
 add_rating(rating) – Adds a rating (1–5) to the meal using the add_rating() function from the library.
 average_rating – Returns the average user rating for the meal using the get_average_rating() function.
 format_meal() – Produces a one-line formatted description using the format_meal() function.
+to_dict() – Returns a dictionary copy of the meal’s data for use in library functions.
 price (property) – Gets or sets the meal’s price with validation that it is non-negative.
 calories (property) – Returns the calorie count for the meal.
 diet (property) – Returns the diet type (e.g., vegetarian, vegan, meat).
@@ -19,12 +20,12 @@ add_many(meals) – Adds multiple Meal objects at once, validating types and dup
 remove(meal_id) – Removes and returns a Meal by its ID, or None if not found.
 get(meal_id) – Retrieves a Meal object by ID from the menu.
 from_csv(csv_text) – Parses a CSV string of meals into a Menu and returns any row-level parsing errors.
-filter_by_diet(restriction) – Returns a list of meals matching a dietary restriction (case-insensitive).
-filter_by_price(max_price) – Returns meals priced at or below a given maximum.
-average_price() – Computes and returns the average price of all meals in the menu.
-count_vegetarian() – Counts how many meals in the menu are vegetarian.
-as_tokens_map() – Converts all meals into a dictionary of token lists for information-retrieval functions.
-search(text, top_k=5) – Performs a tokenized search through the menu and returns top-k ranked meals by overlap.
+filter_by_diet(restriction) – Returns a list of meals matching a dietary restriction (case-insensitive) using the filter_by_diet() function.
+filter_by_price(max_price) – Returns meals priced at or below a given maximum using the filter_by_price() function.
+average_price() – Computes and returns the average price of all meals in the menu using the average_price() function.
+count_vegetarian() – Counts how many meals in the menu are vegetarian using the count_vegetarian() function.
+recommend(prefs=None, budget=None, top_k=5, strategy="best") – Generates recommended meals using the recommend_meals() function from the library.
+analytics() – Returns a summary dictionary of meal statistics and insights using the generate_analytics() function.
 len() – Returns the number of Meal objects in the menu.
 iter() – Enables iteration through all Meal objects in the menu.
 str() – Returns a simple summary such as “Menu with N meals.”
