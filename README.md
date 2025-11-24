@@ -181,11 +181,20 @@ generate_analytics(meals)
 #   'total_meals': 2
 # }
 }
-# Class Hierarchy
-
+# Class Hierarchies
+## Inheritance with Meal Items
 AbstractMealItem(ABC)
-|
-|___StandardMeal
-|___SpecialtyMeal
-|___BundleMeal
+- |___StandardMeal
+- |___SpecialtyMeal
+- |___BundleMeal
+
+## Relationships Involving Composition
+Menu
+- |__Has several instances of AbstractMealItems
+
+Recommendations
+- |__Connects to the class Menu through a has-a relationship
+
+
+  
 
