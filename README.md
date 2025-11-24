@@ -181,3 +181,11 @@ generate_analytics(meals)
 #   'total_meals': 2
 # }
 }
+# Class Hierarchy
+
+AbstractMealItem(ABC)
+|
+|___StandardMeal
+|___SpecialtyMeal
+|___BundleMeal
+
