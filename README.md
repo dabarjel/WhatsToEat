@@ -190,7 +190,7 @@ AbstractMealItem(ABC)
 
 ## Relationships Involving Composition
 Menu
-- |__Has several instances of AbstractMealItems
+- |__Has multiple instances of AbstractMealItems
 
 Recommendations
 - |__Connects to the class Menu through a has-a relationship
