@@ -79,6 +79,12 @@ class Meal:
         #Return a formatted one-line description using library function.
         return format_meal(self._meal_dict)
 
+    def to_dict(self) -> Dict[str, Any]:
+        """Return dictionary representation of meal."""
+        result = dict(self._meal_dict)
+        result['type'] = 'standard'  # Add type for meal_from_dict compatibility
+        return result
+
     # String representations
     def __str__(self):
         return self.format_meal()

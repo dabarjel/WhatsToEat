@@ -96,12 +96,26 @@ class Menu:
         """
         Rebuild a Menu from a list of meal dictionaries (persistence support).
         """
-        from meal_items import meal_from_dict
+        from information_retreival_MealClass import Meal
         meals = []
         for data in meal_dicts:
-            meals.append(meal_from_dict(data))
+            # Create Meal objects from dictionaries
+            meal = Meal(
+                meal_id=data['id'],
+                name=data['name'],
+                price=data['price'],
+                calories=data['calories'],
+                diet=data['diet'],
+                flavor=data['flavor']
+            )
+            # Restore ratings if they exist
+            if 'ratings' in data:
+                for rating in data['ratings']:
+                    meal.add_rating(rating)
+            meals.append(meal)
         return cls(meals)
-    
+
+
     # Filtering / Stats using library functions
     def filter_by_diet(self, restriction: str) -> List["Meal"]:
         """Return meals matching diet restriction."""

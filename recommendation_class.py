@@ -1,7 +1,7 @@
 """Recommendation system using composition."""
 
 from typing import List
-from menu import Menu
+from menu_class_compositon import Menu
 from meal_items import AbstractMealItem
 
 

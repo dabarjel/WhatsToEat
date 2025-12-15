@@ -1,8 +1,8 @@
 """Demo of meal recommendation system."""
 
 from meal_items import StandardMeal, SpecialtyMeal, BundleMeal
-from menu import Menu
-from recommendations import Recommendations
+from menu_class_compositon import Menu
+from recommendation_class import Recommendations
 
 
 def demo_inheritance():

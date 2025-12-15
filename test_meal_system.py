@@ -2,8 +2,8 @@
 
 import unittest
 from meal_items import AbstractMealItem, StandardMeal, SpecialtyMeal, BundleMeal
-from menu import Menu
-from recommendations import Recommendations
+from menu_class_compositon import Menu
+from recommendation_class import Recommendations
 
 
 class TestInheritance(unittest.TestCase):
