@@ -134,6 +134,27 @@ class UserPreferences:
         budget_str = f"${self._budget:.2f}" if self._budget is not None else "No budget"
         return f"UserPreferences(history={self._history_ids}, budget={budget_str})"
 
+    def to_dict(self) -> Dict:
+    """
+    Convert user preferences to a dictionary for persistence.
+    """
+    return {
+        "history_ids": list(self._history_ids),
+        "budget": self._budget,
+        "token_weights": dict(self._token_weights)
+    }
+
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "UserPreferences":
+    #Rebuild UserPreferences from a saved dictionary.
+        prefs = cls(
+            history_ids=data.get("history_ids"),
+            budget=data.get("budget")
+        )
+        prefs._token_weights = data.get("token_weights", {})
+        return prefs
+
     def __repr__(self) -> str:
         return f"UserPreferences(history_ids={self._history_ids}, budget={self._budget})"
 
