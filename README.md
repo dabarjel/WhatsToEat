@@ -181,3 +181,17 @@ generate_analytics(meals)
 #   'total_meals': 2
 # }
 }
+
+## Testing Strategy
+
+This project uses Python’s built-in unittest framework to ensure correctness and reliability at multiple levels.
+
+Unit tests validate individual helper functions such as text normalization, budget checks, and price calculations to ensure core logic works correctly in isolation.
+
+Integration tests verify that multiple components work together correctly, including meal filtering, rating aggregation, and relevance scoring. These tests ensure data flows correctly between functions.
+
+System tests validate complete end-to-end workflows that simulate realistic user interactions, such as applying dietary constraints, price limits, preference-based scoring, and rating analysis.
+
+Together, these tests provide confidence that the WhatsToEat system functions correctly and reliably across all major use cases.
+
+
