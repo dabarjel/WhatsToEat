@@ -125,3 +125,46 @@ class BundleMeal(AbstractMealItem):
 
     def get_preparation_info(self) -> str:
         return f"Bundle of {self.num_items} items: {self.discount_percent}% off"
+
+def meal_from_dict(data: dict) -> AbstractMealItem:
+    """
+    Factory function to create the correct Meal object from a dictionary.
+    """
+
+    meal_type = data.get("type")
+
+    if meal_type == "standard":
+        return StandardMeal(
+            meal_id=data["id"],
+            name=data["name"],
+            price=data["price"],
+            calories=data["calories"],
+            diet=data["diet"],
+            flavor=data["flavor"]
+        )
+
+    if meal_type == "specialty":
+        return SpecialtyMeal(
+            meal_id=data["id"],
+            name=data["name"],
+            price=data["price"],
+            calories=data["calories"],
+            diet=data["diet"],
+            flavor=data["flavor"],
+            preparation_time=data.get("preparation_time", 30)
+        )
+
+    if meal_type == "bundle":
+        return BundleMeal(
+            meal_id=data["id"],
+            name=data["name"],
+            price=data["price"],
+            calories=data["calories"],
+            diet=data["diet"],
+            flavor=data["flavor"],
+            num_items=data.get("num_items", 2),
+            discount_percent=data.get("discount_percent", 20.0)
+        )
+
+    raise ValueError(f"Unknown meal type: {meal_type}")
+
