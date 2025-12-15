@@ -87,6 +87,15 @@ class Menu:
         except Exception as exc:
             return cls([]), [str(exc)]
 
+    @classmethod
+    def from_dict_list(cls, meal_dicts: List[Dict[str, Any]]) -> "Menu":
+   
+    #Rebuild a Menu from a list of meal dictionaries (persistence support).
+    
+        meals = []
+        for data in meal_dicts:
+            meals.append(meal_from_dict(data))
+        return cls(meals)
     # Filtering / Stats using library functions
     def filter_by_diet(self, restriction: str) -> List["Meal"]:
         #Return meals matching diet restriction.
