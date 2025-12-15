@@ -4,6 +4,9 @@
 - Ehsan Semati
 - Brent Sare
 
+## Video URL
+https://vimeo.com/1146469993?share=copy&fl=sv&fe=ci
+
 ## Project Overview
 Python-based food recommendation and filtering system for students to pick meals based on budget, diet, and taste.
 
