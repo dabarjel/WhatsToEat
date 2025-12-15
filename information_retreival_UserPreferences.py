@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import Dict, List, Optional, Iterable
 from meal_finder_library import learn_preferences_from_history, within_budget
+import json
+from pathlib import Path
 
 class UserPreferences:
     """Represents a user's meal preferences (history + budget + learned weights).
@@ -49,12 +51,12 @@ class UserPreferences:
     # Properties
     @property
     def history_ids(self) -> List[str]:
-        #list[str]: Copy of the user's selection history (read-only).
+        """list[str]: Copy of the user's selection history (read-only)."""
         return list(self._history_ids)
 
     @property
     def budget(self) -> Optional[float]:
-        #float | None: User's non-negative budget or None.
+        """float | None: User's non-negative budget or None."""
         return self._budget
 
     @budget.setter
@@ -70,7 +72,7 @@ class UserPreferences:
 
     @property
     def token_weights(self) -> Dict[str, float]:
-        #dict[str, float]: Copy of learned flavor/diet token weights (0..1).
+        """dict[str, float]: Copy of learned flavor/diet token weights (0..1)."""
         return dict(self._token_weights)
 
     # Methods
@@ -122,32 +124,26 @@ class UserPreferences:
         return within_budget(price, self._budget)
 
     def reset_history(self) -> None:
-        #Clear the user's meal history.
+        """Clear the user's meal history."""
         self._history_ids.clear()
 
     def reset_token_weights(self) -> None:
-        #Clear the user's learned token weights.
+        """Clear the user's learned token weights."""
         self._token_weights.clear()
 
-    # String Representations
-    def __str__(self) -> str:
-        budget_str = f"${self._budget:.2f}" if self._budget is not None else "No budget"
-        return f"UserPreferences(history={self._history_ids}, budget={budget_str})"
-
     def to_dict(self) -> Dict:
-    """
-    Convert user preferences to a dictionary for persistence.
-    """
-    return {
-        "history_ids": list(self._history_ids),
-        "budget": self._budget,
-        "token_weights": dict(self._token_weights)
-    }
-
+        """
+        Convert user preferences to a dictionary for persistence.
+        """
+        return {
+            "history_ids": list(self._history_ids),
+            "budget": self._budget,
+            "token_weights": dict(self._token_weights)
+        }
 
     @classmethod
     def from_dict(cls, data: Dict) -> "UserPreferences":
-    #Rebuild UserPreferences from a saved dictionary.
+        """Rebuild UserPreferences from a saved dictionary."""
         prefs = cls(
             history_ids=data.get("history_ids"),
             budget=data.get("budget")
@@ -155,6 +151,60 @@ class UserPreferences:
         prefs._token_weights = data.get("token_weights", {})
         return prefs
 
+    # NEW: File I/O methods for Project 4
+    def save_to_file(self, filepath: str) -> None:
+        """
+        Save user preferences to JSON file.
+        
+        Args:
+            filepath: Path to save file (e.g., 'data/user_prefs.json')
+            
+        Raises:
+            IOError: If file cannot be written
+        """
+        path = Path(filepath)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            with open(path, 'w') as f:
+                json.dump(self.to_dict(), f, indent=2)
+        except IOError as e:
+            raise IOError(f"Error saving preferences to {filepath}: {e}")
+
+    @classmethod
+    def load_from_file(cls, filepath: str) -> "UserPreferences":
+        """
+        Load user preferences from JSON file.
+        
+        Args:
+            filepath: Path to JSON file
+            
+        Returns:
+            UserPreferences object
+            
+        Raises:
+            FileNotFoundError: If file doesn't exist
+            ValueError: If file contains invalid data
+            IOError: If file cannot be read
+        """
+        path = Path(filepath)
+        
+        if not path.exists():
+            raise FileNotFoundError(f"Preferences file not found: {filepath}")
+        
+        try:
+            with open(path, 'r') as f:
+                data = json.load(f)
+            return cls.from_dict(data)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON in preferences file: {e}")
+        except IOError as e:
+            raise IOError(f"Error reading preferences from {filepath}: {e}")
+
+    # String Representations
+    def __str__(self) -> str:
+        budget_str = f"${self._budget:.2f}" if self._budget is not None else "No budget"
+        return f"UserPreferences(history={self._history_ids}, budget={budget_str})"
+
     def __repr__(self) -> str:
         return f"UserPreferences(history_ids={self._history_ids}, budget={self._budget})"
-
